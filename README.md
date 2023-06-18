@@ -1,2 +1,1 @@
-# BLUE-Shop
 # BLUE-Pet
