@@ -1,0 +1,14 @@
+http://localhost:3000
+
+
+###signup
+
+POST http://localhost:3000/v1/api/shop/signup
+Content-Type: application/json
+
+{
+    "username":"Blue",
+    "email":"blue@gmail.com",
+    "mobile":"01231424",
+    "password":"123456"
+}

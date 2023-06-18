@@ -2,10 +2,13 @@
 
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import User from "../models/user.model.js";
+import { User } from "../models/user.model.js";
+import KeyTokenService from "./keytoken.service.js";
+import createTokenPair from "../auth/authUtil.js";
+import getInfoData from "./../utils/index.js";
 
 class AccessService {
-  static signUp = async ({ username, email, password }) => {
+  static signUp = async ({ username, email, mobile, password }) => {
     try {
       const holderUser = await User.findOne({ username }).lean();
       const hashPassword = await bcrypt.hash(password, 10);
@@ -22,10 +25,48 @@ class AccessService {
       });
 
       if (newUser) {
-        const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-          modulusLength: 4096,
+        //create publicKey and privateKey
+        const publicKey = crypto.randomBytes(64).toString("hex");
+        const privateKey = crypto.randomBytes(64).toString("hex");
+
+        const keyStore = await KeyTokenService.createKeyToken({
+          userId: newUser._id,
+          publicKey,
+          privateKey,
         });
+
+        if (!keyStore) {
+          return {
+            message: "tokenKey error",
+          };
+        }
+
+        //create token pair
+        const token = await createTokenPair(
+          {
+            userId: newUser._id,
+            username,
+          },
+          publicKey,
+          privateKey
+        );
+        console.log("Token created successfully", token);
+
+        return {
+          code: 201,
+          metadata: {
+            user: getInfoData({
+              fields: ["_id", "username", "email"],
+              object: newUser,
+            }),
+            token,
+          },
+        };
       }
+      return {
+        code: 201,
+        metadata: null,
+      };
     } catch (err) {
       return {
         message: err.message,
