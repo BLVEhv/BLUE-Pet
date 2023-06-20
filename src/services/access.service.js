@@ -9,9 +9,51 @@ import getInfoData from "./../utils/index.js";
 import {
   ConflictRequestError,
   BadRequestError,
+  AuthFailureError,
 } from "../core/error.response.js";
+import { findByUsername } from "./user.service.js";
 
 class AccessService {
+  static logIn = async ({ username, password, refreshToken }) => {
+    //1.check username in db
+    const foundUser = await findByUsername({ username });
+    if (!foundUser) {
+      throw new BadRequestError("User is not registered");
+    }
+    //2.match password
+    const matchPassword = bcrypt.compare(password, foundUser.password);
+    if (!matchPassword) {
+      throw new AuthFailureError("Authentication error");
+    }
+    //3.create accessToken and refreshToken and save
+    const publicKey = crypto.randomBytes(64).toString("hex");
+    const privateKey = crypto.randomBytes(64).toString("hex");
+    //4.generate tokens
+    const { _id: userId } = foundUser;
+    const token = await createTokenPair(
+      {
+        userId,
+        username,
+      },
+      publicKey,
+      privateKey
+    );
+    await KeyTokenService.createKeyToken({
+      refreshToken: token.refreshToken,
+      publicKey,
+      privateKey,
+      userId,
+    });
+    //5.get data and return login
+    return {
+      user: getInfoData({
+        fields: ["_id", "username", "email"],
+        object: foundUser,
+      }),
+      token,
+    };
+  };
+
   static signUp = async ({ username, email, mobile, password }) => {
     const holderUser = await User.findOne({ username }).lean();
     const hashPassword = await bcrypt.hash(password, 10);

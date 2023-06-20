@@ -6,7 +6,7 @@ const createTokenPair = async (playload, publicKey, privateKey) => {
     const accessToken = await JWT.sign(playload, publicKey, {
       expiresIn: "2 days",
     });
-
+    //refreshToken
     const refreshToken = await JWT.sign(playload, privateKey, {
       expiresIn: "7 days",
     });

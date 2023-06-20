@@ -1,3 +1,5 @@
+import { httpStatusCode } from "./../utils/httpStatusCode.js";
+
 const StatusCode = {
   FORBIDEN: 403,
   CONFLICT: 409,
@@ -6,6 +8,11 @@ const StatusCode = {
 const ReasonStatusCode = {
   FORBIDEN: "Bad request error",
   CONFLICT: "Confict",
+};
+
+const httpStatus = {
+  statusCode: httpStatusCode.StatusCodes,
+  reasonPhrares: httpStatusCode.ReasonPhrases,
 };
 
 class ErrorResponse extends Error {
@@ -33,4 +40,13 @@ class BadRequestError extends ErrorResponse {
   }
 }
 
-export { ConflictRequestError, BadRequestError };
+class AuthFailureError extends ErrorResponse {
+  constructor(
+    message = reasonPhrares.UNAUTHORIZED,
+    statusCode = StatusCodes.UNAUTHORIZED
+  ) {
+    super(message, statusCode);
+  }
+}
+
+export { ConflictRequestError, BadRequestError, AuthFailureError };
