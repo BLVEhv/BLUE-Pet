@@ -44,13 +44,11 @@ const authentication = async (req, res, next) => {
   }
   //3.Verify token
   const accessToken = req.headers[HEADER.AUTHORIZATION].split(" ")[1];
-  console.log("", accessToken);
   if (!accessToken) {
     throw new AuthFailureError("Unauthorization");
   }
   try {
     const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
-    console.log("", decodeUser);
     if (userId !== decodeUser.userId) {
       throw new AuthFailureError("Invalid userId");
     }

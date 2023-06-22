@@ -1,3 +1,10 @@
+import { httpStatusCode } from "./../utils/httpStatusCode.js";
+
+const httpStatus = {
+  statusCodes: httpStatusCode.StatusCodes,
+  reasonPhrares: httpStatusCode.ReasonPhrases,
+};
+
 const StatusCode = {
   OK: 200,
   CREATED: 201,
@@ -11,22 +18,27 @@ const ReasonStatusCode = {
 class SuccessResponse {
   constructor(
     message,
-    statusCode = StatusCode.OK,
-    reasonStatusCode = ReasonStatusCode.OK,
-    metadata = {}
+    statusCode = httpStatus.statusCodes.OK,
+    reasonStatusCode = httpStatus.reasonPhrares.OK
   ) {
     this.message = !message ? reasonStatusCode : message;
-    this.status = statusCode;
-    this.metadata = metadata;
-  }
-  send(res, headers = {}) {
-    return res.status(this.status).json(this);
+    this.statusCode = statusCode;
   }
 }
 
 class OK extends SuccessResponse {
-  constructor({ message, metadata }) {
-    super(message, statusCode);
+  constructor(
+    message,
+    statusCode,
+    reasonStatusCode,
+    metadata = {},
+    errorStatus
+  ) {
+    super(message, statusCode, reasonStatusCode, metadata);
+    this.errorStatus = errorStatus;
+  }
+  send(res) {
+    return res.status(this.errorStatus || this.statusCode).json(this);
   }
 }
 

@@ -6,12 +6,12 @@ import { User } from "../models/user.model.js";
 import KeyTokenService from "./keytoken.service.js";
 import { createTokenPair } from "../auth/authUtil.js";
 import getInfoData from "./../utils/index.js";
+import { findByUsername } from "../services/user.service.js";
 import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
 } from "../core/error.response.js";
-import { findByUsername } from "./user.service.js";
 
 class AccessService {
   static logOut = async (keyStore) => {
@@ -25,13 +25,13 @@ class AccessService {
       throw new BadRequestError("User is not registered");
     }
     //2.match password
-    const matchPassword = bcrypt.compare(password, foundUser.password);
+    const matchPassword = await bcrypt.compare(password, foundUser.password);
     if (!matchPassword) {
       throw new AuthFailureError("Authentication error");
     }
     //3.create accessToken and refreshToken and save
-    const publicKey = crypto.randomBytes(64).toString("hex");
-    const privateKey = crypto.randomBytes(64).toString("hex");
+    const publicKey = await crypto.randomBytes(64).toString("hex");
+    const privateKey = await crypto.randomBytes(64).toString("hex");
     //4.generate tokens
     const { _id: userId } = foundUser;
     const token = await createTokenPair(
