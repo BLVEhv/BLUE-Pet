@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { User } from "../models/user.model.js";
 import KeyTokenService from "./keytoken.service.js";
-import createTokenPair from "../auth/authUtil.js";
+import { createTokenPair } from "../auth/authUtil.js";
 import getInfoData from "./../utils/index.js";
 import {
   ConflictRequestError,
@@ -14,6 +14,10 @@ import {
 import { findByUsername } from "./user.service.js";
 
 class AccessService {
+  static logOut = async (keyStore) => {
+    const delKey = await KeyTokenService.deleteKeyToken(keyStore._id);
+    return delKey;
+  };
   static logIn = async ({ username, password, refreshToken }) => {
     //1.check username in db
     const foundUser = await findByUsername({ username });

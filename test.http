@@ -5,7 +5,20 @@ content-Type: application/json
 
 {
     "username": "Hien",
-    "email": "hien@gmail.com",
-    "mobile": "02432341231",
+    "email": "Hien@gmail.com",
+    "mobile": "09442341231",
     "password": "123456"
 }
+
+###login
+
+POST http://localhost:3000/v1/api/shop/login
+content-Type: application/json
+
+{
+    "username": "Hien",
+    "password": "123456"
+}
+
+###logout
+POST http://localhost:3000/v1/api/shop/logout

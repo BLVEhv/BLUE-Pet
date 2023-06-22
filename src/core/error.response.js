@@ -11,7 +11,7 @@ const ReasonStatusCode = {
 };
 
 const httpStatus = {
-  statusCode: httpStatusCode.StatusCodes,
+  statusCodes: httpStatusCode.StatusCodes,
   reasonPhrares: httpStatusCode.ReasonPhrases,
 };
 
@@ -42,11 +42,25 @@ class BadRequestError extends ErrorResponse {
 
 class AuthFailureError extends ErrorResponse {
   constructor(
-    message = reasonPhrares.UNAUTHORIZED,
-    statusCode = StatusCodes.UNAUTHORIZED
+    message = httpStatus.reasonPhrares.UNAUTHORIZED,
+    statusCode = httpStatus.statusCodes.UNAUTHORIZED
   ) {
     super(message, statusCode);
   }
 }
 
-export { ConflictRequestError, BadRequestError, AuthFailureError };
+class NotFoundError extends ErrorResponse {
+  constructor(
+    message = httpStatus.reasonPhrares.NOT_FOUND,
+    statusCode = httpStatus.statusCodes.NOT_FOUND
+  ) {
+    super(message, statusCode);
+  }
+}
+
+export {
+  ConflictRequestError,
+  BadRequestError,
+  AuthFailureError,
+  NotFoundError,
+};
