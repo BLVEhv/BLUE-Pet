@@ -1,10 +1,14 @@
-import AccessService from "../services/access.service.js";
-
+import { createAdmin } from "../services/admin.service.js";
+import { OK } from "../core/success.response.js";
 class AdminController {
-  logIn = async (req, res, next) => {
-    new OK({
-      metadata: await AccessService.logInAdmin(req.body),
-    }).send(res);
+  createAdmin = async (req, res, next) => {
+    try {
+      new OK({
+        metadata: await createAdmin(req.body),
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
   };
 }
 

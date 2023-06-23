@@ -23,6 +23,10 @@ class KeyAdminService {
       console.log(err);
     }
   };
+
+  static findByAdminId = async (adminId) => {
+    return await keyAdmin.findOne({ _id: adminId }).lean();
+  };
 }
 
 export default KeyAdminService;

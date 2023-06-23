@@ -1,20 +1,32 @@
+import { findAdminById } from "../services/admin.service.js";
+import KeyAdminService from "../services/keyadmin.service.js";
+import { AuthFailureError, NotFoundError } from "../core/error.response.js";
+import JWT from "jsonwebtoken";
 const HEADER = {
   CLIENT_ID: "x-client-id",
   AUTHORIZATION: "authorization",
 };
 
-const authentication = async (req, res, next) => {
-  //1.Check adminId
+const adminAuthentication = async (req, res, next) => {
+  //Check adminId
   const adminId = req.headers[HEADER.CLIENT_ID];
   if (!adminId) {
     throw new AuthFailureError("Invalid request");
   }
-  //2.Get accessToken
-  const keyStore = await KeyTokenService.findByUserId(adminId);
+  //Check role
+  const adminFound = await findAdminById(adminId);
+  if (!adminFound) {
+    throw new AuthFailureError("Invalid request");
+  }
+  if (adminFound.role !== "Admin") {
+    throw new AuthFailureError("Invalid request");
+  }
+  //Get accessToken
+  const keyStore = await KeyAdminService.findByAdminId(adminId);
   if (!keyStore) {
     throw new NotFoundError("Not found keyStore");
   }
-  //3.Verify token
+  //Verify token
   const accessToken = req.headers[HEADER.AUTHORIZATION].split(" ")[1];
   if (!accessToken) {
     throw new AuthFailureError("Unauthorization");
@@ -22,7 +34,7 @@ const authentication = async (req, res, next) => {
   try {
     const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
     if (adminId !== decodeUser.adminId) {
-      throw new AuthFailureError("Invalid adminId");
+      throw new AuthFailureError("Invalid admin");
     }
     req.keyStore = keyStore;
     return next();
@@ -30,3 +42,5 @@ const authentication = async (req, res, next) => {
     console.log(err);
   }
 };
+
+export default adminAuthentication;

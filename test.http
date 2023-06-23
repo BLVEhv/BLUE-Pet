@@ -20,5 +20,13 @@ content-Type: application/json
     "password": "123456"
 }
 
-###logout
-POST http://localhost:3000/v1/api/shop/logout
+###change-password
+POST http://localhost:3000/v1/api/shop/change-password
+Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDkxOGYwNGQzMTAyMWMyOTRjN2Y1NjIiLCJ1c2VybmFtZSI6IkJMVUUiLCJpYXQiOjE2ODc0MjkzMTIsImV4cCI6MTY4NzYwMjExMn0.bGQLH49xbucwvuvWNSsaWev4iuGzuyQk7zb4wgdm6sM"
+x-client-id: "64918f04d31021c294c7f562"
+
+{
+    "password": "123456",
+    "newPassword": "123",
+    "verifyNewPassword": "123"
+}

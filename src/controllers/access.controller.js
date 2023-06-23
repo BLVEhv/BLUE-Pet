@@ -1,30 +1,42 @@
 "use strict";
 
 import AccessService from "../services/access.service.js";
-import { OK, CREATED, SuccessResponse } from "../core/success.response.js";
+import { OK, CREATED } from "../core/success.response.js";
 
 class AccessController {
   logInAdmin = async (req, res, next) => {
-    new OK({
-      metadata: await AccessService.logInAdmin(req.body),
-    }).send(res);
+    try {
+      new OK({
+        metadata: await AccessService.logInAdmin(req.body),
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
   };
 
   logOut = async (req, res, next) => {
-    new SuccessResponse({
-      metadata: await AccessService.logOut(req.keyStore),
-    }).send(res);
+    try {
+      new OK({
+        metadata: await AccessService.logOut(req.keyStore),
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
   };
 
   logIn = async (req, res, next) => {
-    new SuccessResponse({
-      metadata: await AccessService.logIn(req.body),
-    }).send(res);
+    try {
+      new OK({
+        metadata: await AccessService.logIn(req.body),
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
   };
 
   signUp = async (req, res, next) => {
     try {
-      new CREATED({
+      new OK({
         message: "Registered Successfully",
         metadata: await AccessService.signUp(req.body),
       }).send(res);
