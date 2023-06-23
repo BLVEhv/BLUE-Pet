@@ -6,6 +6,7 @@ import { AuthFailureError, BadRequestError } from "../core/error.response.js";
 import { createTokenPair } from "../auth/authUtil.js";
 import getInfoData from "./../utils/index.js";
 import { SuccessResponse } from "../core/success.response.js";
+import { Types } from "mongoose";
 
 const findAdminByUsername = async ({ username }) => {
   return await Admin.findOne({ username });
@@ -109,11 +110,37 @@ const adminChangePassword = async (
     console.log(err);
   }
   return {
-    user: getInfoData({
+    admin: getInfoData({
       fields: ["_id", "username", "email"],
       object: adminFound,
     }),
   };
 };
 
-export { findAdminByUsername, findAdminById, createAdmin, adminChangePassword };
+const resetPasswordAdmin = async (param) => {
+  const adminId = new Types.ObjectId(param.id);
+  const adminFound = await Admin.findOneAndUpdate(
+    { _id: adminId },
+    {
+      password: await bcrypt.hash("admin@123", 10),
+    },
+    {
+      upsert: true,
+      new: true,
+    }
+  );
+  return {
+    admin: getInfoData({
+      fields: ["_id", "username", "email"],
+      object: adminFound,
+    }),
+  };
+};
+
+export {
+  findAdminByUsername,
+  findAdminById,
+  createAdmin,
+  adminChangePassword,
+  resetPasswordAdmin,
+};

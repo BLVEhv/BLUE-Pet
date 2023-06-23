@@ -12,5 +12,5 @@ routerAdmin.post("/logout", accessController.logOutAdmin);
 //change password
 routerAdmin.post("/change-password", AdminController.changePassword);
 //reset password
-
+routerAdmin.put("/reset-password/:id", AdminController.resetPassword);
 export default routerAdmin;
