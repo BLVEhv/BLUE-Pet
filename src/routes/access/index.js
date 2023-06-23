@@ -9,6 +9,8 @@ const routerAccess = express.Router();
 routerAccess.post("/shop/signup", accessController.signUp);
 //logIn
 routerAccess.post("/shop/login", accessController.logIn);
+//login admin
+routerAccess.post("/shop/admin/login", accessController.logInAdmin);
 //authentication
 routerAccess.use(authentication);
 //logOut

@@ -12,12 +12,55 @@ import {
   BadRequestError,
   AuthFailureError,
 } from "../core/error.response.js";
+import KeyAdminService from "./keyadmin.service.js";
+import { findAdminByUsername } from "./admin.service.js";
 
 class AccessService {
+  static logInAdmin = async ({ username, password, refreshToken }) => {
+    //1.check username in db
+    const foundAdmin = await findAdminByUsername({ username });
+    if (!foundAdmin) {
+      throw new BadRequestError("Admin is not exist");
+    }
+    //2.match password
+    const matchPassword = await bcrypt.compare(password, foundAdmin.password);
+    if (!matchPassword) {
+      throw new AuthFailureError("Authentication error");
+    }
+    //3.create accessToken and refreshToken and save
+    const publicKey = await crypto.randomBytes(64).toString("hex");
+    const privateKey = await crypto.randomBytes(64).toString("hex");
+    //4.generate tokens
+    const { _id: adminId } = foundAdmin;
+    const token = await createTokenPair(
+      {
+        adminId,
+        username,
+      },
+      publicKey,
+      privateKey
+    );
+    await KeyAdminService.createKeyToken({
+      refreshToken: token.refreshToken,
+      publicKey,
+      privateKey,
+      adminId,
+    });
+    //5.get data and return login
+    return {
+      admin: getInfoData({
+        fields: ["_id", "username", "email"],
+        object: foundAdmin,
+      }),
+      token,
+    };
+  };
+
   static logOut = async (keyStore) => {
     const delKey = await KeyTokenService.deleteKeyToken(keyStore._id);
     return delKey;
   };
+
   static logIn = async ({ username, password, refreshToken }) => {
     //1.check username in db
     const foundUser = await findByUsername({ username });
