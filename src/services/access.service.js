@@ -16,6 +16,11 @@ import KeyAdminService from "./keyadmin.service.js";
 import { findAdminByUsername } from "./admin.service.js";
 
 class AccessService {
+  static logOutAdmin = async (keyStoreAdmin) => {
+    const delKey = await KeyAdminService.deleteKeyAdmin(keyStoreAdmin._id);
+    return delKey;
+  };
+
   static logInAdmin = async ({ username, password, refreshToken }) => {
     //1.check username in db
     const foundAdmin = await findAdminByUsername({ username });

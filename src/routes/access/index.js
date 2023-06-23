@@ -5,10 +5,10 @@ import accessController from "../../controllers/access.controller.js";
 const routerAccess = express.Router();
 
 //signUp
-routerAccess.post("/shop/signup", accessController.signUp);
+routerAccess.post("/signup", accessController.signUp);
 //logIn
-routerAccess.post("/shop/login", accessController.logIn);
+routerAccess.post("/login", accessController.logIn);
 //login admin
-routerAccess.post("/shop/admin/login", accessController.logInAdmin);
+routerAccess.post("/admin/login", accessController.logInAdmin);
 
 export default routerAccess;

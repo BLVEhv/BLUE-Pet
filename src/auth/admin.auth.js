@@ -22,9 +22,9 @@ const adminAuthentication = async (req, res, next) => {
     throw new AuthFailureError("Invalid request");
   }
   //Get accessToken
-  const keyStore = await KeyAdminService.findByAdminId(adminId);
-  if (!keyStore) {
-    throw new NotFoundError("Not found keyStore");
+  const keyStoreAdmin = await KeyAdminService.findByAdminId(adminId);
+  if (!keyStoreAdmin) {
+    throw new NotFoundError("Not found keyStoreAdmin");
   }
   //Verify token
   const accessToken = req.headers[HEADER.AUTHORIZATION].split(" ")[1];
@@ -32,11 +32,11 @@ const adminAuthentication = async (req, res, next) => {
     throw new AuthFailureError("Unauthorization");
   }
   try {
-    const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+    const decodeUser = JWT.verify(accessToken, keyStoreAdmin.publicKey);
     if (adminId !== decodeUser.adminId) {
       throw new AuthFailureError("Invalid admin");
     }
-    req.keyStore = keyStore;
+    req.keyStoreAdmin = keyStoreAdmin;
     return next();
   } catch (err) {
     console.log(err);

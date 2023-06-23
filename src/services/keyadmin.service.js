@@ -27,6 +27,9 @@ class KeyAdminService {
   static findByAdminId = async (adminId) => {
     return await keyAdmin.findOne({ _id: adminId }).lean();
   };
+  static deleteKeyAdmin = async (adminId) => {
+    return await keyAdmin.deleteOne({ _id: adminId });
+  };
 }
 
 export default KeyAdminService;

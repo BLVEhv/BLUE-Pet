@@ -33,8 +33,8 @@ class KeyTokenService {
     return await keyTokenModel.findOne({ _id: userId }).lean();
   };
 
-  static deleteKeyToken = async (id) => {
-    return await keyTokenModel.deleteOne(id);
+  static deleteKeyToken = async (userId) => {
+    return await keyTokenModel.deleteOne({ _id: userId });
   };
 }
 

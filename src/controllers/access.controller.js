@@ -4,6 +4,16 @@ import AccessService from "../services/access.service.js";
 import { OK, CREATED } from "../core/success.response.js";
 
 class AccessController {
+  logOutAdmin = async (req, res, next) => {
+    try {
+      new OK({
+        metadata: await AccessService.logOutAdmin(req.keyStoreAdmin),
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  };
+
   logInAdmin = async (req, res, next) => {
     try {
       new OK({
