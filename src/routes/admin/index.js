@@ -9,5 +9,8 @@ const routerAdmin = express.Router();
 routerAdmin.post("/create-admin", AdminController.createAdmin);
 //logout
 routerAdmin.post("/logout", accessController.logOutAdmin);
+//change password
+routerAdmin.post("/change-password", AdminController.changePassword);
+//reset password
 
 export default routerAdmin;

@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from "../core/error.response.js";
+import { BadRequestError, AuthFailureError } from "../core/error.response.js";
 import { SuccessResponse } from "../core/success.response.js";
 import { User } from "../models/user.model.js";
 import getInfoData from "../utils/index.js";

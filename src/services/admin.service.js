@@ -2,9 +2,10 @@ import { Admin } from "../models/admin.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import KeyAdminService from "./keyadmin.service.js";
-import { BadRequestError } from "../core/error.response.js";
+import { AuthFailureError, BadRequestError } from "../core/error.response.js";
 import { createTokenPair } from "../auth/authUtil.js";
 import getInfoData from "./../utils/index.js";
+import { SuccessResponse } from "../core/success.response.js";
 
 const findAdminByUsername = async ({ username }) => {
   return await Admin.findOne({ username });
@@ -71,4 +72,48 @@ const createAdmin = async ({ username, email, password }) => {
   };
 };
 
-export { findAdminByUsername, findAdminById, createAdmin };
+const adminChangePassword = async (
+  clientId,
+  { password, newPassword, verifyNewPassword }
+) => {
+  const adminFound = await Admin.findOne({ _id: clientId });
+  if (!adminFound) {
+    throw new AuthFailureError("Unauthorization");
+  }
+  try {
+    const matchPassword = await bcrypt.compare(password, adminFound.password);
+
+    if (!matchPassword) {
+      throw new BadRequestError("The older password is not correct");
+    } else {
+      if (newPassword !== verifyNewPassword) {
+        throw new BadRequestError(
+          "New password and verify new password is not match"
+        );
+      } else {
+        const adminUpdate = await Admin.findOneAndUpdate(
+          adminFound._id,
+          {
+            password: await bcrypt.hash(verifyNewPassword, 10),
+          },
+          { upsert: true, new: true }
+        );
+        if (adminUpdate) {
+          throw new SuccessResponse("Update password successfully");
+        } else {
+          throw new BadRequestError("Update password failed");
+        }
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  return {
+    user: getInfoData({
+      fields: ["_id", "username", "email"],
+      object: adminFound,
+    }),
+  };
+};
+
+export { findAdminByUsername, findAdminById, createAdmin, adminChangePassword };
