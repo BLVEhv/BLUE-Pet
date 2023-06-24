@@ -7,8 +7,10 @@ import routerUser from "./user/index.js";
 import routerAdmin from "./admin/index.js";
 import { authentication } from "../auth/authUtil.js";
 import adminAuthentication from "../auth/admin.auth.js";
+import routerPet from "./pet/index.js";
 
 router.use("/v1/api/shop", routerAccess);
 router.use("/v1/api/user", authentication, routerUser);
 router.use("/v1/api/admin", adminAuthentication, routerAdmin);
+router.use("/v1/api/pet", adminAuthentication, routerPet);
 export default router;
