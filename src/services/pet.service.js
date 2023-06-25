@@ -2,15 +2,18 @@ import { BadRequestError } from "../core/error.response.js";
 import { cat, dog, pet } from "../models/pet.model.js";
 
 class PetFactory {
+  static petRegistry = {};
+
+  static registerPetType(type, classRef) {
+    PetFactory.petRegistry[type] = classRef;
+  }
+
   static async createPet(type, payload) {
-    switch (type) {
-      case "Cat":
-        return new Cat(payload).createPet();
-      case "Dog":
-        return new Dog(payload).createPet();
-      default:
-        throw new BadRequestError(`Invalid pet type ${type}`);
+    const petClass = PetFactory.petRegistry[type];
+    if (!petClass) {
+      throw new BadRequestError("Invalid pet types");
     }
+    return new petClass(payload).createPet();
   }
 }
 
@@ -33,8 +36,8 @@ class PetGeneral {
     this.pet_descripton = pet_descripton;
   }
 
-  async createPet() {
-    return await pet.create(this);
+  async createPet(pet_id) {
+    return await pet.create({ ...this, _id: pet_id });
   }
 }
 
@@ -44,7 +47,7 @@ class Cat extends PetGeneral {
     if (!newCat) {
       throw new BadRequestError("Create new cat error");
     }
-    const newPet = await super.createPet();
+    const newPet = await super.createPet(newCat._id);
     if (!newPet) {
       throw new BadRequestError("Create new pet error");
     }
@@ -58,12 +61,15 @@ class Dog extends PetGeneral {
     if (!newDog) {
       throw new BadRequestError("Create new dog error");
     }
-    const newPet = await super.createPet();
+    const newPet = await super.createPet(newDog._id);
     if (!newPet) {
       throw new BadRequestError("Create new pet error");
     }
     return newPet;
   }
 }
+
+PetFactory.registerPetType("Cat", Cat);
+PetFactory.registerPetType("Dog", Dog);
 
 export default PetFactory;
