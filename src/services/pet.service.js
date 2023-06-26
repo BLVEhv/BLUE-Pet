@@ -1,5 +1,7 @@
+import { Types } from "mongoose";
 import { BadRequestError } from "../core/error.response.js";
 import { cat, dog, pet } from "../models/pet.model.js";
+import { findAllDraft } from "../models/repositories/pet.repo.js";
 
 class PetFactory {
   static petRegistry = {};
@@ -15,6 +17,14 @@ class PetFactory {
     }
     return new petClass(payload).createPet();
   }
+
+  static async findAllDraftForAdmin(pet_admin, limit = 20, skip = 0) {
+    console.log(pet_admin.pet_admin.adminId);
+    // const petAdminId = pet_admin.pet_admin.adminId;
+    const query = { pet_admin: pet_admin.pet_admin.adminId, isDraft: true };
+    // console.log("", petAdminId);
+    return await findAllDraft({ query, limit, skip });
+  }
 }
 
 class PetGeneral {
@@ -26,6 +36,7 @@ class PetGeneral {
     pet_type,
     pet_attributes,
     pet_descripton,
+    pet_admin,
   }) {
     this.pet_name = pet_name;
     this.pet_thumb = pet_thumb;
@@ -34,6 +45,7 @@ class PetGeneral {
     this.pet_type = pet_type;
     this.pet_attributes = pet_attributes;
     this.pet_descripton = pet_descripton;
+    this.pet_admin = pet_admin;
   }
 
   async createPet(pet_id) {
@@ -43,7 +55,10 @@ class PetGeneral {
 
 class Cat extends PetGeneral {
   async createPet() {
-    const newCat = await cat.create(this.pet_attributes);
+    const newCat = await cat.create({
+      ...this.pet_attributes,
+      pet_admin: this.pet_admin,
+    });
     if (!newCat) {
       throw new BadRequestError("Create new cat error");
     }
@@ -57,7 +72,10 @@ class Cat extends PetGeneral {
 
 class Dog extends PetGeneral {
   async createPet() {
-    const newDog = await dog.create(this.pet_attributes);
+    const newDog = await dog.create({
+      ...this.pet_attributes,
+      pet_admin: this.pet_admin,
+    });
     if (!newDog) {
       throw new BadRequestError("Create new dog error");
     }

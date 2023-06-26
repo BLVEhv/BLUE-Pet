@@ -3,8 +3,11 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import { connect } from "./configs/connectDB.js";
-import router from "./routes/index.js";
 import "dotenv/config";
+import authRouter from "./routes/auth.router.js";
+import checkRoleMiddleware from "./middleware/role.js";
+import adminRouter from "./routes/admin.router.js";
+import passport from "passport";
 
 const app = express();
 
@@ -19,7 +22,19 @@ app.use(express.urlencoded({ extended: true }));
 connect();
 
 //init route
-app.use("/", router);
+app.use("/auth", authRouter);
+
+app.get(
+  "/test",
+  checkRoleMiddleware(["user"]),
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    res.json({ msg: "Hello" });
+  }
+);
+
+app.use("/admin", checkRoleMiddleware(["admin"]));
+app.use("/admin", adminRouter);
 
 //handling error
 app.use((req, res, next) => {

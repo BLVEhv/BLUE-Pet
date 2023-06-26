@@ -1,36 +1,137 @@
-import {
-  adminChangePassword,
-  createAdmin,
-  resetPasswordAdmin,
-} from "../services/admin.service.js";
-import { OK } from "../core/success.response.js";
+"use strict";
+
+import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+
 class AdminController {
+  getAllUser = async (req, res, next) => {
+    try {
+      const users = await User.find({ roles: { $ne: [] } });
+      res.send(users);
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  };
+
+  getUserById = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        throw new Error("User is not found");
+      }
+      res.send(user);
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  };
+
+  banUserById = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { roles: [] },
+        { new: true, upsert: true }
+      );
+      if (!user) {
+        throw new Error("User is not found");
+      }
+      res.send(user);
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  };
+
+  changePasswordAdmin = async (req, res, next) => {
+    try {
+      const adminEmail = req.decode.user.email;
+      if (!adminEmail) {
+        throw new Error("Admin email is invalid");
+      }
+      const admin = await User.findOne({ email: adminEmail });
+      if (!admin) {
+        throw new Error("Admin is not found");
+      }
+      const { password, newPassword, verifyNewPassword } = req.body;
+      const salt = await bcrypt.genSalt();
+      const hashedNewPassword = await bcrypt.hash(verifyNewPassword, salt);
+      const matchPassword = await bcrypt.compare(password, admin.password);
+      if (!matchPassword) {
+        throw new Error("The old password is incorrect");
+      }
+      if (newPassword !== verifyNewPassword) {
+        throw new Error("New password and verifyPassword do not match");
+      } else {
+        const adminUpdate = await User.findByIdAndUpdate(
+          { _id: admin._id },
+          { password: hashedNewPassword },
+          {
+            new: true,
+            upsert: true,
+          }
+        );
+        res.send(adminUpdate);
+      }
+    } catch (err) {
+      next(err);
+    }
+  };
+
   createAdmin = async (req, res, next) => {
     try {
-      new OK({
-        metadata: await createAdmin(req.body),
-      }).send(res);
+      const { email, password, verifyPassword, name, age, address, dob } =
+        req.body;
+      if (!email || !password || !verifyPassword) {
+        throw new Error("Email and passwords are required");
+      }
+      if (password !== verifyPassword) {
+        throw new Error("Passwords do not match");
+      }
+      const existingAdmin = await User.findOne({ email });
+      if (existingAdmin) {
+        return res.status(409).send({ msg: "Admin already exists" });
+      }
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
+      const newAdmin = new User({
+        email,
+        name,
+        age,
+        address,
+        dob,
+        password: hashedPassword,
+        salt,
+      });
+      newAdmin.roles.push("admin");
+      await newAdmin.save();
+      return res.status(201).json({ msg: "Create admin successful" });
     } catch (err) {
-      next(err);
+      console.error(err);
+      return res.status(400).json({ msg: "Failed to create admin" });
     }
   };
 
-  changePassword = async (req, res, next) => {
-    const clientId = req.headers["x-client-id"];
+  resetPasswordById = async (req, res, next) => {
+    const { id } = req.params;
     try {
-      new OK({
-        metadata: await adminChangePassword(clientId, req.body),
-      }).send(res);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-  resetPassword = async (req, res, next) => {
-    try {
-      new OK({
-        metadata: await resetPasswordAdmin(req.params),
-      }).send(res);
+      const user = await User.findById(id);
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash("abc@123", salt);
+      if (!user) {
+        throw new Error("User is not found");
+      }
+      const checkAdmin = user.roles.find((item) => item === "admin");
+      if (!checkAdmin) {
+        throw new Error("User is not admin");
+      } else {
+        await User.findByIdAndUpdate(
+          id,
+          { password: hashedPassword },
+          { new: true, upsert: true }
+        );
+        res.status(200).json({ msg: "Reset password success" });
+      }
     } catch (err) {
       next(err);
     }
