@@ -109,6 +109,22 @@ authRouter.get(
   }
 );
 
+//logout
+authRouter.post(
+  "/logout",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const { email } = req.user;
+    const { refreshToken } = req.body;
+    await User.updateOne({ email }, { $pull: { refreshToken } });
+    try {
+      res.status(200).send({ msg: "Logout successful." });
+    } catch (error) {
+      res.status(500).send({ msg: error.messages });
+    }
+  }
+);
+
 //forget password
 authRouter.post("/forget-password", UserController.forgetPassword);
 //reset password user
