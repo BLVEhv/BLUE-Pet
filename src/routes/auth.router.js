@@ -3,6 +3,7 @@ import passport from "../configs/passport.js";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import UserController from "../controllers/user.controller.js";
 
 const authRouter = Router();
 
@@ -107,5 +108,10 @@ authRouter.get(
     }
   }
 );
+
+//forget password
+authRouter.post("/forget-password", UserController.forgetPassword);
+//reset password user
+authRouter.post("/:id/:token", UserController.resetPassword);
 
 export default authRouter;

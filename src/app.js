@@ -43,9 +43,9 @@ app.use("/admin", adminRouter);
 app.use(
   "/user",
   passport.authenticate("jwt", { session: false }),
-  checkRoleMiddleware(["user"])
+  checkRoleMiddleware(["user"]),
+  userRouter
 );
-app.use("/user", userRouter);
 
 //handling error
 app.use((req, res, next) => {

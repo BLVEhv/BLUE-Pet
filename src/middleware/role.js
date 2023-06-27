@@ -1,23 +1,24 @@
-import jwt from "jsonwebtoken";
-
 function checkRoleMiddleware(roles) {
   return async (req, res, next) => {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-      const decode = token ? jwt.verify(token, process.env.SECRET) : null;
-
-      if (
-        decode &&
-        decode.user.roles &&
-        roles &&
-        roles.some((role) => decode.user.roles.includes(role))
-      ) {
-        return next();
+      if (!roles || roles.length === 0) {
+        return res.status(400).send({ msg: "Roles not provided" });
       }
 
-      throw new Error("Access denied");
+      if (!req.user) {
+        return res.status(401).send({ msg: "Access denied" });
+      }
+
+      const userRoles = req.user.roles;
+      const authorized = roles.some((role) => userRoles.includes(role));
+
+      if (!authorized) {
+        return next(new Error("Access denied"));
+      }
+
+      return next();
     } catch (error) {
-      res.status(401).send({ msg: error.message });
+      return next(error);
     }
   };
 }
