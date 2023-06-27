@@ -11,7 +11,5 @@ adminRouter.get("/user/:id", AdminController.getUserById);
 adminRouter.put("/user/:id", AdminController.banUserById);
 
 //admin
-adminRouter.put("/", AdminController.changePasswordAdmin);
-
 adminRouter.put("/:id", AdminController.resetPasswordById);
 export default adminRouter;

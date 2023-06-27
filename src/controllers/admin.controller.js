@@ -43,41 +43,6 @@ class AdminController {
     }
   };
 
-  changePasswordAdmin = async (req, res, next) => {
-    try {
-      const adminEmail = req.decode.user.email;
-      if (!adminEmail) {
-        throw new Error("Admin email is invalid");
-      }
-      const admin = await User.findOne({ email: adminEmail });
-      if (!admin) {
-        throw new Error("Admin is not found");
-      }
-      const { password, newPassword, verifyNewPassword } = req.body;
-      const salt = await bcrypt.genSalt();
-      const hashedNewPassword = await bcrypt.hash(verifyNewPassword, salt);
-      const matchPassword = await bcrypt.compare(password, admin.password);
-      if (!matchPassword) {
-        throw new Error("The old password is incorrect");
-      }
-      if (newPassword !== verifyNewPassword) {
-        throw new Error("New password and verifyPassword do not match");
-      } else {
-        const adminUpdate = await User.findByIdAndUpdate(
-          { _id: admin._id },
-          { password: hashedNewPassword },
-          {
-            new: true,
-            upsert: true,
-          }
-        );
-        res.send(adminUpdate);
-      }
-    } catch (err) {
-      next(err);
-    }
-  };
-
   createAdmin = async (req, res, next) => {
     try {
       const { email, password, verifyPassword, name, age, address, dob } =

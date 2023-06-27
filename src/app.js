@@ -8,6 +8,7 @@ import authRouter from "./routes/auth.router.js";
 import checkRoleMiddleware from "./middleware/role.js";
 import adminRouter from "./routes/admin.router.js";
 import passport from "passport";
+import userRouter from "./routes/user.router.js";
 
 const app = express();
 
@@ -33,8 +34,18 @@ app.get(
   }
 );
 
-app.use("/admin", checkRoleMiddleware(["admin"]));
+app.use(
+  "/admin",
+  passport.authenticate("jwt", { session: false }),
+  checkRoleMiddleware(["admin"])
+);
 app.use("/admin", adminRouter);
+app.use(
+  "/user",
+  passport.authenticate("jwt", { session: false }),
+  checkRoleMiddleware(["user"])
+);
+app.use("/user", userRouter);
 
 //handling error
 app.use((req, res, next) => {
