@@ -19,7 +19,14 @@ authRouter.post(
     console.log(req.user);
     const accessToken = generateAccessToken(req.user);
     const refreshToken = generateRefreshToken(req.user);
-    await User.updateOne({ email: req.user.email }, { refreshToken });
+    await User.updateOne(
+      { email: req.user.email },
+      {
+        $set: {
+          refreshToken,
+        },
+      }
+    );
     res.json({ accessToken, refreshToken });
   }
 );
@@ -42,7 +49,22 @@ authRouter.post("/refresh-token", async (req, res) => {
     }
     const accessToken = generateAccessToken({ email, roles: user.roles });
     const newRefreshToken = generateRefreshToken({ email, roles: user.roles });
-    await User.updateOne({ email }, { refreshToken: newRefreshToken });
+    await User.updateOne(
+      { email },
+      {
+        $pull: {
+          refreshToken,
+        },
+      }
+    );
+    await User.updateOne(
+      { email },
+      {
+        $set: {
+          refreshToken: newRefreshToken,
+        },
+      }
+    );
     return res.json({ accessToken, refreshToken: newRefreshToken });
   } catch (err) {
     console.error(err);
@@ -99,7 +121,7 @@ authRouter.get(
       const newRefreshToken = generateRefreshToken(req.user);
       await User.updateOne(
         { email: req.user.email },
-        { refreshToken: newRefreshToken }
+        { $set: { refreshToken: newRefreshToken } }
       );
       return res.json({ accessToken, refreshToken: newRefreshToken });
     } catch (error) {

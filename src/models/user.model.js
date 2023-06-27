@@ -8,7 +8,7 @@ const UserSchema = new Schema({
   age: { type: Number },
   address: { type: String },
   dob: { type: Date },
-  refreshToken: String,
+  refreshToken: { type: [String], default: [] },
   roles: { type: [String], default: ["user"] },
 });
 

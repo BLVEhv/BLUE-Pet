@@ -55,7 +55,11 @@ class UserController {
       });
       await User.findByIdAndUpdate(
         { _id: user._id },
-        { refreshToken: refreshToken },
+        {
+          $set: {
+            refreshToken,
+          },
+        },
         { upsert: true, new: true }
       );
       const link = `${process.env.BASE_URL}/password-reset/${user._id}/${refreshToken}`;
