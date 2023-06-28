@@ -17,8 +17,7 @@ const petSchema = new Schema(
     pet_quantity: { type: Number, default: "", required: true },
     pet_descripton: String,
     pet_admin: {
-      type: Schema.Types.ObjectId,
-      ref: "Admin",
+      type: String,
     },
     pet_slug: String,
     pet_type: {

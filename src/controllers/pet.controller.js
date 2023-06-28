@@ -1,29 +1,16 @@
-import { Types } from "mongoose";
-import { BadRequestError } from "../core/error.response.js";
 import { cat, dog, pet } from "../models/pet.model.js";
-import { findAllDraft } from "../models/repositories/pet.repo.js";
+import User from "../models/user.model.js";
 
 class PetFactory {
-  static petRegistry = {};
-
-  static registerPetType(type, classRef) {
-    PetFactory.petRegistry[type] = classRef;
-  }
-
   static async createPet(type, payload) {
-    const petClass = PetFactory.petRegistry[type];
-    if (!petClass) {
-      throw new BadRequestError("Invalid pet types");
+    switch (type) {
+      case "Cat":
+        return new Cat(payload).createPet();
+      case "Dog":
+        return new Dog(payload).createPet();
+      default:
+        throw new Error(`Invalid pet type ${type}`);
     }
-    return new petClass(payload).createPet();
-  }
-
-  static async findAllDraftForAdmin(pet_admin, limit = 20, skip = 0) {
-    console.log(pet_admin.pet_admin.adminId);
-    // const petAdminId = pet_admin.pet_admin.adminId;
-    const query = { pet_admin: pet_admin.pet_admin.adminId, isDraft: true };
-    // console.log("", petAdminId);
-    return await findAllDraft({ query, limit, skip });
   }
 }
 
@@ -60,11 +47,11 @@ class Cat extends PetGeneral {
       pet_admin: this.pet_admin,
     });
     if (!newCat) {
-      throw new BadRequestError("Create new cat error");
+      throw new Error("Create new cat error");
     }
     const newPet = await super.createPet(newCat._id);
     if (!newPet) {
-      throw new BadRequestError("Create new pet error");
+      throw new Error("Create new pet error");
     }
     return newPet;
   }
@@ -77,17 +64,24 @@ class Dog extends PetGeneral {
       pet_admin: this.pet_admin,
     });
     if (!newDog) {
-      throw new BadRequestError("Create new dog error");
+      throw new Error("Create new dog error");
     }
     const newPet = await super.createPet(newDog._id);
     if (!newPet) {
-      throw new BadRequestError("Create new pet error");
+      throw new Error("Create new pet error");
     }
     return newPet;
   }
 }
 
-PetFactory.registerPetType("Cat", Cat);
-PetFactory.registerPetType("Dog", Dog);
-
-export default PetFactory;
+class PetController {
+  createPet = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    await PetFactory.createPet(req.body.pet_type, {
+      ...req.body,
+      pet_admin: user._id,
+    });
+    res.send("Create pet success");
+  };
+}
+export default new PetController();
