@@ -17,4 +17,6 @@ adminRouter.put("/:id", AdminController.resetPasswordById);
 adminRouter.post("/create-pet", PetController.createPet);
 //get all draft
 adminRouter.get("/draft", PetController.findAllDraft);
+//publish draft
+adminRouter.put("/draft/:id", PetController.publishDraftById);
 export default adminRouter;

@@ -1,5 +1,6 @@
 import { cat, dog, pet } from "../models/pet.model.js";
 import User from "../models/user.model.js";
+import queryPet from "../utils/queryPet.util.js";
 
 class PetFactory {
   static async createPet(type, payload) {
@@ -13,16 +14,28 @@ class PetFactory {
     }
   }
 
-  static async findAllDraft({ pet_admin }) {
-    const draftFound = await pet
-      .find({ pet_admin, isDraft: true })
-      // .populate("pet_admin", "name email")
-      .sort({ updateAt: -1 })
-      .skip(0)
-      .limit(20)
-      .lean()
-      .exec();
-    return draftFound;
+  static async findAllDraft({ pet_admin, limit = 20, skip = 0 }) {
+    const query = { pet_admin, isDraft: true };
+    return await queryPet({ query, limit, skip });
+  }
+
+  static async findAllPublish({ pet_admin, limit = 20, skip = 0 }) {
+    const query = { pet_admin, isPublish: true };
+    return await queryPet({ query, limit, skip });
+  }
+  static async publishDraftById({ pet_admin, id }) {
+    const draftFound = await pet.findOne({
+      pet_admin: pet_admin,
+      _id: id,
+    });
+    if (!draftFound) {
+      throw new Error("Draft is not exist");
+    }
+
+    draftFound.isDraft = false;
+    draftFound.isPublish = true;
+    const { modifiedCount } = await draftFound.updateOne(draftFound);
+    return modifiedCount;
   }
 }
 
@@ -100,6 +113,23 @@ class PetController {
     const user = await User.findOne({ email: req.user.email });
     const draftPets = await PetFactory.findAllDraft({ pet_admin: user._id });
     res.send(draftPets);
+  };
+
+  findAllPublish = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    const publishPets = await PetFactory.findAllPublish({
+      pet_admin: user._id,
+    });
+    res.send(publishPets);
+  };
+
+  publishDraftById = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    const draftPublish = await PetFactory.publishDraftById({
+      pet_admin: user._id,
+      id: req.params.id,
+    });
+    res.send("Publish success");
   };
 }
 export default new PetController();
