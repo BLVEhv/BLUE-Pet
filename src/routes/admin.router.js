@@ -15,4 +15,6 @@ adminRouter.put("/user/:id", AdminController.banUserById);
 adminRouter.put("/:id", AdminController.resetPasswordById);
 //create pet
 adminRouter.post("/create-pet", PetController.createPet);
+//get all draft
+adminRouter.get("/draft", PetController.findAllDraft);
 export default adminRouter;

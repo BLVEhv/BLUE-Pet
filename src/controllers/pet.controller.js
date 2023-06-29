@@ -12,6 +12,18 @@ class PetFactory {
         throw new Error(`Invalid pet type ${type}`);
     }
   }
+
+  static async findAllDraft({ pet_admin }) {
+    const draftFound = await pet
+      .find({ pet_admin, isDraft: true })
+      // .populate("pet_admin", "name email")
+      .sort({ updateAt: -1 })
+      .skip(0)
+      .limit(20)
+      .lean()
+      .exec();
+    return draftFound;
+  }
 }
 
 class PetGeneral {
@@ -82,6 +94,12 @@ class PetController {
       pet_admin: user._id,
     });
     res.send("Create pet success");
+  };
+
+  findAllDraft = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    const draftPets = await PetFactory.findAllDraft({ pet_admin: user._id });
+    res.send(draftPets);
   };
 }
 export default new PetController();
