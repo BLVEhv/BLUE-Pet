@@ -8,4 +8,5 @@ const userRouter = Router();
 userRouter.put("/", UserController.changePassword);
 //
 userRouter.get("/", PetController.findAllPublish);
+
 export default userRouter;

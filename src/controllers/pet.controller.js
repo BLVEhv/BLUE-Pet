@@ -37,6 +37,36 @@ class PetFactory {
     const { modifiedCount } = await draftFound.updateOne(draftFound);
     return modifiedCount;
   }
+
+  static async unPublishDraftById({ pet_admin, id }) {
+    const publishFound = await pet.findOne({
+      pet_admin: pet_admin,
+      _id: id,
+    });
+    if (!publishFound) {
+      throw new Error("Publish is not exist");
+    }
+
+    publishFound.isDraft = true;
+    publishFound.isPublish = false;
+    const { modifiedCount } = await publishFound.updateOne(publishFound);
+    return modifiedCount;
+  }
+
+  static async searchPetByName({ keySearch }) {
+    const regexSearch = new RegExp(keySearch);
+    const results = await pet
+      .find(
+        {
+          isPublish: true,
+          $text: { $search: regexSearch },
+        },
+        { score: { $meta: "textScore" } }
+      )
+      .sort({ score: { $meta: "textScore" } })
+      .lean();
+    return results;
+  }
 }
 
 class PetGeneral {
@@ -125,11 +155,25 @@ class PetController {
 
   publishDraftById = async (req, res, next) => {
     const user = await User.findOne({ email: req.user.email });
-    const draftPublish = await PetFactory.publishDraftById({
+    await PetFactory.publishDraftById({
       pet_admin: user._id,
       id: req.params.id,
     });
     res.send("Publish success");
+  };
+
+  unPublishDraftById = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    await PetFactory.unPublishDraftById({
+      pet_admin: user._id,
+      id: req.params.id,
+    });
+    res.send("unPublish success");
+  };
+
+  searchPetByName = async (req, res, next) => {
+    const petFound = await PetFactory.searchPetByName(req.params);
+    res.send(petFound);
   };
 }
 export default new PetController();

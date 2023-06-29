@@ -19,4 +19,6 @@ adminRouter.post("/create-pet", PetController.createPet);
 adminRouter.get("/draft", PetController.findAllDraft);
 //publish draft
 adminRouter.put("/draft/:id", PetController.publishDraftById);
+//unpublish
+adminRouter.put("/un-publish/:id", PetController.unPublishDraftById);
 export default adminRouter;

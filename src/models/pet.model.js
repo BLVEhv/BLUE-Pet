@@ -49,6 +49,8 @@ petSchema.pre("save", function (next) {
   next();
 });
 
+petSchema.index({ pet_name: "text", pet_descripton: "text" });
+
 const catSchema = new mongoose.Schema(
   {
     generic: { type: String, default: "", required: true },

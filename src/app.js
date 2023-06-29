@@ -9,6 +9,7 @@ import checkRoleMiddleware from "./middleware/role.js";
 import adminRouter from "./routes/admin.router.js";
 import passport from "passport";
 import userRouter from "./routes/user.router.js";
+import PetController from "./controllers/pet.controller.js";
 
 const app = express();
 
@@ -23,6 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 connect();
 
 //init route
+app.get("/search/:keySearch", PetController.searchPetByName);
+
 app.use("/auth", authRouter);
 
 app.get(
@@ -37,9 +40,10 @@ app.get(
 app.use(
   "/admin",
   passport.authenticate("jwt", { session: false }),
-  checkRoleMiddleware(["admin"])
+  checkRoleMiddleware(["admin"]),
+  adminRouter
 );
-app.use("/admin", adminRouter);
+
 app.use(
   "/user",
   passport.authenticate("jwt", { session: false }),
