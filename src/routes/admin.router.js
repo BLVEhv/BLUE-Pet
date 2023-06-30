@@ -1,6 +1,7 @@
 import { Router } from "express";
 import AdminController from "../controllers/admin.controller.js";
 import PetController from "../controllers/pet.controller.js";
+import ProductController from "../controllers/product.controller.js";
 
 const adminRouter = Router();
 
@@ -15,10 +16,24 @@ adminRouter.put("/user/:id", AdminController.banUserById);
 adminRouter.put("/:id", AdminController.resetPasswordById);
 //create pet
 adminRouter.post("/create-pet", PetController.createPet);
-//get all draft
-adminRouter.get("/draft", PetController.findAllDraft);
-//publish draft
-adminRouter.put("/draft/:id", PetController.publishDraftById);
-//unpublish
-adminRouter.put("/un-publish/:id", PetController.unPublishDraftById);
+//create product
+adminRouter.post("/create-product", ProductController.createProduct);
+//get all draft pet
+adminRouter.get("/draft-pet", PetController.findAllDraft);
+//get all draft product
+adminRouter.get("/draft-product", ProductController.findAllDraft);
+//publish draft pet
+adminRouter.put("/draft-pet/:id", PetController.publishDraftById);
+//publish draft product
+adminRouter.put("/draft-product/:id", ProductController.publishDraftById);
+//unpublish pet
+adminRouter.put(
+  "/un-publish-product/:id",
+  ProductController.unPublishDraftById
+);
+//unpublish product
+adminRouter.put(
+  "/un-publish-product/:id",
+  ProductController.unPublishDraftById
+);
 export default adminRouter;
