@@ -28,4 +28,10 @@ const queryPet = async ({ query, limit, skip }) => {
     .exec();
 };
 
-export { queryPet, findAllPublishPet, getDetailPet };
+const updatePetById = async ({ pet_id, bodyUpdate, model, isNew = true }) => {
+  return await model.findByIdAndUpdate({ _id: pet_id }, bodyUpdate, {
+    new: isNew,
+  });
+};
+
+export { queryPet, findAllPublishPet, getDetailPet, updatePetById };

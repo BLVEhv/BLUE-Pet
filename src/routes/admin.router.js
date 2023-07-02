@@ -36,4 +36,8 @@ adminRouter.put(
   "/un-publish-product/:id",
   ProductController.unPublishDraftById
 );
+//update pet
+adminRouter.patch("/pet/:id", PetController.updatePet);
+//update product
+adminRouter.patch("/product/:id", ProductController.updateProduct);
 export default adminRouter;

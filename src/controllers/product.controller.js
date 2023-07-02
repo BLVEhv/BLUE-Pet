@@ -1,9 +1,14 @@
-import { food, product } from "../models/product.model.js";
+import { accessory, food, product, sand } from "../models/product.model.js";
 import User from "../models/user.model.js";
+import {
+  removeUndefinedObject,
+  updateNestedObjectParser,
+} from "../utils/index.js";
 import {
   queryProduct,
   findAllPublish,
   getDetailProduct,
+  updateProductById,
 } from "../utils/queryProduct.js";
 
 class ProductFactory {
@@ -15,6 +20,19 @@ class ProductFactory {
         return new Sand(payload).createProduct();
       case "Accessory":
         return new Accessory(payload).createProduct();
+      default:
+        throw new Error(`Invalid product type ${type}`);
+    }
+  }
+
+  static async updateProduct(type, product_id, payload) {
+    switch (type) {
+      case "Food":
+        return new Food(payload).updateProduct(product_id);
+      case "Sand":
+        return new Sand(payload).updateProduct(product_id);
+      case "Accessory":
+        return new Accessory(payload).updateProduct(product_id);
       default:
         throw new Error(`Invalid product type ${type}`);
     }
@@ -117,6 +135,10 @@ class ProductGeneral {
   async createProduct(product_id) {
     return await product.create({ ...this, _id: product_id });
   }
+
+  async updateProduct(product_id, bodyUpdate) {
+    return await updateProductById({ product_id, bodyUpdate, model: product });
+  }
 }
 
 class Food extends ProductGeneral {
@@ -133,6 +155,25 @@ class Food extends ProductGeneral {
       throw new Error("Create new product error");
     }
     return newProduct;
+  }
+
+  async updateProduct(product_id) {
+    //remove undefined value
+    const objectParams = removeUndefinedObject(this);
+    //check update position
+    if (objectParams.product_attributes) {
+      await updateProductById({
+        product_id,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: food,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(
+      product_id,
+      updateNestedObjectParser(objectParams)
+    );
+    return updateProduct;
   }
 }
 
@@ -151,6 +192,25 @@ class Sand extends ProductGeneral {
     }
     return newProduct;
   }
+
+  async updateProduct(product_id) {
+    //remove undefined value
+    const objectParams = removeUndefinedObject(this);
+    //check update position
+    if (objectParams.product_attributes) {
+      await updatePetById({
+        product_id,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: sand,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(
+      product_id,
+      updateNestedObjectParser(objectParams)
+    );
+    return updateProduct;
+  }
 }
 
 class Accessory extends ProductGeneral {
@@ -167,6 +227,25 @@ class Accessory extends ProductGeneral {
       throw new Error("Create new product error");
     }
     return newProduct;
+  }
+
+  async updateProduct(product_id) {
+    //remove undefined value
+    const objectParams = removeUndefinedObject(this);
+    //check update position
+    if (objectParams.product_attributes) {
+      await updatePetById({
+        product_id,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: accessory,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(
+      product_id,
+      updateNestedObjectParser(objectParams)
+    );
+    return updateProduct;
   }
 }
 
@@ -224,6 +303,15 @@ class ProductController {
       id: req.params.id,
     });
     res.send(detailProduct);
+  };
+
+  updateProduct = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    await ProductFactory.updateProduct(req.body.product_type, req.params.id, {
+      ...req.body,
+      product_admin: user._id,
+    });
+    res.send("Update product success");
   };
 }
 export default new ProductController();

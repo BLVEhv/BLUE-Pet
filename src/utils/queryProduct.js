@@ -28,4 +28,15 @@ const queryProduct = async ({ query, limit, skip }) => {
     .exec();
 };
 
-export { queryProduct, findAllPublish, getDetailProduct };
+const updateProductById = async ({
+  product_id,
+  bodyUpdate,
+  model,
+  isNew = true,
+}) => {
+  return await model.findByIdAndUpdate({ _id: product_id }, bodyUpdate, {
+    new: isNew,
+  });
+};
+
+export { queryProduct, findAllPublish, getDetailProduct, updateProductById };

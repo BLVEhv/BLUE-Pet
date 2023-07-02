@@ -1,9 +1,14 @@
 import { cat, dog, pet } from "../models/pet.model.js";
 import User from "../models/user.model.js";
 import {
+  removeUndefinedObject,
+  updateNestedObjectParser,
+} from "../utils/index.js";
+import {
   queryPet,
   findAllPublishPet,
   getDetailPet,
+  updatePetById,
 } from "../utils/queryPet.util.js";
 
 class PetFactory {
@@ -89,6 +94,17 @@ class PetFactory {
       .lean();
     return results;
   }
+
+  static async updatePet(type, pet_Id, payload) {
+    switch (type) {
+      case "Cat":
+        return new Cat(payload).updatePet(pet_Id);
+      case "Dog":
+        return new Dog(payload).updatePet(pet_Id);
+      default:
+        throw new Error(`Invalid pet type ${type}`);
+    }
+  }
 }
 
 class PetGeneral {
@@ -115,6 +131,10 @@ class PetGeneral {
   async createPet(pet_id) {
     return await pet.create({ ...this, _id: pet_id });
   }
+
+  async updatePet(pet_id, bodyUpdate) {
+    return await updatePetById({ pet_id, bodyUpdate, model: pet });
+  }
 }
 
 class Cat extends PetGeneral {
@@ -132,6 +152,25 @@ class Cat extends PetGeneral {
     }
     return newPet;
   }
+
+  async updatePet(pet_id) {
+    //remove undefined value
+    const objectParams = removeUndefinedObject(this);
+    //check update position
+    if (objectParams.pet_attributes) {
+      await updatePetById({
+        pet_id,
+        bodyUpdate: updateNestedObjectParser(objectParams.pet_attributes),
+        model: cat,
+      });
+    }
+
+    const updatePet = await super.updatePet(
+      pet_id,
+      updateNestedObjectParser(objectParams)
+    );
+    return updatePet;
+  }
 }
 
 class Dog extends PetGeneral {
@@ -148,6 +187,25 @@ class Dog extends PetGeneral {
       throw new Error("Create new pet error");
     }
     return newPet;
+  }
+
+  async updatePet(pet_id) {
+    //remove undefined value
+    const objectParams = removeUndefinedObject(this);
+    //check update position
+    if (objectParams.pet_attributes) {
+      await updatePetById({
+        pet_id,
+        bodyUpdate: updateNestedObjectParser(objectParams.pet_attributes),
+        model: dog,
+      });
+    }
+
+    const updatePet = await super.updatePet(
+      pet_id,
+      updateNestedObjectParser(objectParams)
+    );
+    return updatePet;
   }
 }
 
@@ -203,6 +261,15 @@ class PetController {
       id: req.params.id,
     });
     res.send(detailPet);
+  };
+
+  updatePet = async (req, res, next) => {
+    const user = await User.findOne({ email: req.user.email });
+    await PetFactory.updatePet(req.body.pet_type, req.params.id, {
+      ...req.body,
+      pet_admin: user._id,
+    });
+    res.send("Update pet success");
   };
 }
 export default new PetController();
