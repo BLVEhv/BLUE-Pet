@@ -1,6 +1,10 @@
 import { food, product } from "../models/product.model.js";
 import User from "../models/user.model.js";
-import queryProduct from "../utils/queryProduct.js";
+import {
+  queryProduct,
+  findAllPublish,
+  getDetailProduct,
+} from "../utils/queryProduct.js";
 
 class ProductFactory {
   static async createProduct(type, payload) {
@@ -21,10 +25,28 @@ class ProductFactory {
     return await queryProduct({ query, limit, skip });
   }
 
-  static async findAllPublish({ product_admin, limit = 20, skip = 0 }) {
-    const query = { product_admin, isPublish: true };
-    return await queryProduct({ query, limit, skip });
+  static async findAllPublish({
+    limit = 20,
+    sort = "ctime",
+    page = 1,
+    filter = { isPublish: true },
+  }) {
+    return await findAllPublish({
+      limit,
+      sort,
+      filter,
+      page,
+      select: ["product_name", "product_price", "product_thumb"],
+    });
   }
+
+  static async getDetailProductById({ id }) {
+    return await getDetailProduct({
+      id,
+      unselect: ["__v", "product_variations"],
+    });
+  }
+
   static async publishDraftById({ product_admin, id }) {
     const draftFound = await product.findOne({
       product_admin: product_admin,
@@ -195,6 +217,13 @@ class ProductController {
   searchProductByName = async (req, res, next) => {
     const productFound = await ProductFactory.searchProductByName(req.params);
     res.send(productFound);
+  };
+
+  getDetailProductById = async (req, res, next) => {
+    const detailProduct = await ProductFactory.getDetailProductById({
+      id: req.params.id,
+    });
+    res.send(detailProduct);
   };
 }
 export default new ProductController();

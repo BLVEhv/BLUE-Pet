@@ -1,6 +1,10 @@
 import { cat, dog, pet } from "../models/pet.model.js";
 import User from "../models/user.model.js";
-import queryPet from "../utils/queryPet.util.js";
+import {
+  queryPet,
+  findAllPublishPet,
+  getDetailPet,
+} from "../utils/queryPet.util.js";
 
 class PetFactory {
   static async createPet(type, payload) {
@@ -19,10 +23,28 @@ class PetFactory {
     return await queryPet({ query, limit, skip });
   }
 
-  static async findAllPublish({ pet_admin, limit = 20, skip = 0 }) {
-    const query = { pet_admin, isPublish: true };
-    return await queryPet({ query, limit, skip });
+  static async findAllPublish({
+    limit = 20,
+    sort = "ctime",
+    page = 1,
+    filter = { isPublish: true },
+  }) {
+    return await findAllPublishPet({
+      limit,
+      sort,
+      filter,
+      page,
+      select: ["pet_name", "pet_price", "pet_thumb"],
+    });
   }
+
+  static async getDetailPetById({ id }) {
+    return await getDetailPet({
+      id,
+      unselect: ["__v", "pet_variations"],
+    });
+  }
+
   static async publishDraftById({ pet_admin, id }) {
     const draftFound = await pet.findOne({
       pet_admin: pet_admin,
@@ -174,6 +196,13 @@ class PetController {
   searchPetByName = async (req, res, next) => {
     const petFound = await PetFactory.searchPetByName(req.params);
     res.send(petFound);
+  };
+
+  getDetailPetById = async (req, res, next) => {
+    const detailPet = await PetFactory.getDetailPetById({
+      id: req.params.id,
+    });
+    res.send(detailPet);
   };
 }
 export default new PetController();

@@ -10,6 +10,10 @@ userRouter.put("/", UserController.changePassword);
 //
 userRouter.get("/pet", PetController.findAllPublish);
 
+userRouter.get("/pet/:id", PetController.getDetailPetById);
+
 userRouter.get("/product", ProductController.findAllPublish);
+
+userRouter.get("/product/:id", ProductController.getDetailProductById);
 
 export default userRouter;
