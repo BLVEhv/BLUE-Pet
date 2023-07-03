@@ -1,3 +1,4 @@
+import inventory from "../models/inventory.model.js";
 import { accessory, food, product, sand } from "../models/product.model.js";
 import User from "../models/user.model.js";
 import {
@@ -133,7 +134,14 @@ class ProductGeneral {
   }
 
   async createProduct(product_id) {
-    return await product.create({ ...this, _id: product_id });
+    const newProduct = await product.create({ ...this, _id: product_id });
+    if (newProduct) {
+      return await inventory.create({
+        _id: product_id,
+        inven_stock: this.product_quantity,
+      });
+    }
+    return newProduct;
   }
 
   async updateProduct(product_id, bodyUpdate) {
