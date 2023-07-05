@@ -2,6 +2,7 @@ import { Router } from "express";
 import AdminController from "../controllers/admin.controller.js";
 import PetController from "../controllers/pet.controller.js";
 import ProductController from "../controllers/product.controller.js";
+import CartController from "../controllers/cart.controller.js";
 
 const adminRouter = Router();
 
@@ -40,4 +41,7 @@ adminRouter.put(
 adminRouter.patch("/pet/:id", PetController.updatePet);
 //update product
 adminRouter.patch("/product/:id", ProductController.updateProduct);
+
+//get list cart
+adminRouter.get("/cart", CartController.getListUserCart);
 export default adminRouter;
