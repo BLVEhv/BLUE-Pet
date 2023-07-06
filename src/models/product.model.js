@@ -14,7 +14,7 @@ const productSchema = new Schema(
     product_name: { type: String, default: "", required: true },
     product_thumb: { type: String, default: "", required: true },
     product_price: { type: Number, default: "", required: true },
-    product_quantity: { type: Number, default: "", required: true },
+    product_quantity: { type: Number, default: 0, required: true },
     product_descripton: String,
     product_admin: {
       type: String,

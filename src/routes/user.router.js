@@ -3,6 +3,7 @@ import UserController from "../controllers/user.controller.js";
 import PetController from "../controllers/pet.controller.js";
 import ProductController from "../controllers/product.controller.js";
 import CartController from "../controllers/cart.controller.js";
+import CheckoutController from "../controllers/checkout.controller.js";
 
 const userRouter = Router();
 
@@ -23,5 +24,6 @@ userRouter.post("/cart", CartController.addToCart);
 userRouter.put("/cart/update", CartController.updateToCart);
 //delete cart
 userRouter.delete("/cart", CartController.deleteFromCart);
-
+//checkout
+userRouter.post("/checkout", CheckoutController.checkOutReview);
 export default userRouter;
