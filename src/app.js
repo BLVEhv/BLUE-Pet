@@ -10,6 +10,7 @@ import adminRouter from "./routes/admin.router.js";
 import passport from "passport";
 import userRouter from "./routes/user.router.js";
 import PetController from "./controllers/pet.controller.js";
+import ProductController from "./controllers/product.controller.js";
 
 const app = express();
 
@@ -24,7 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 connect();
 
 //init route
-app.get("/search/:keySearch", PetController.searchPetByName);
+app.get("/search-pet/:keySearch", PetController.searchPetByName);
+app.get("/search-product/:keySearch", ProductController.searchProductByName);
 
 app.use("/auth", authRouter);
 

@@ -14,29 +14,33 @@ adminRouter.get("/user/:id", AdminController.getUserById);
 adminRouter.put("/user/:id", AdminController.banUserById);
 
 //admin
+adminRouter.post("/create-admin", AdminController.createAdmin);
+
 adminRouter.put("/:id", AdminController.resetPasswordById);
+
 //create pet
 adminRouter.post("/create-pet", PetController.createPet);
 //create product
 adminRouter.post("/create-product", ProductController.createProduct);
+
 //get all draft pet
 adminRouter.get("/draft-pet", PetController.findAllDraft);
 //get all draft product
 adminRouter.get("/draft-product", ProductController.findAllDraft);
+
 //publish draft pet
 adminRouter.put("/draft-pet/:id", PetController.publishDraftById);
 //publish draft product
 adminRouter.put("/draft-product/:id", ProductController.publishDraftById);
+
 //unpublish pet
-adminRouter.put(
-  "/un-publish-product/:id",
-  ProductController.unPublishDraftById
-);
+adminRouter.put("/un-publish-pet/:id", PetController.unPublishDraftById);
 //unpublish product
 adminRouter.put(
   "/un-publish-product/:id",
   ProductController.unPublishDraftById
 );
+
 //update pet
 adminRouter.patch("/pet/:id", PetController.updatePet);
 //update product

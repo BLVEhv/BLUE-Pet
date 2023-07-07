@@ -38,7 +38,6 @@ const productSchema = new Schema(
       max: [5, "Rating must be behind 5.0"],
       set: (val) => Math.round(val * 10) / 10,
     },
-    product_variations: { type: Array, default: [] },
     isDraft: { type: Boolean, default: true, index: true, select: false },
     isPublish: { type: Boolean, default: false, index: true, select: false },
   },
