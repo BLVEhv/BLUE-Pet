@@ -28,15 +28,6 @@ app.get("/search/:keySearch", PetController.searchPetByName);
 
 app.use("/auth", authRouter);
 
-app.get(
-  "/test",
-  checkRoleMiddleware(["user"]),
-  passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    res.json({ msg: "Hello" });
-  }
-);
-
 app.use(
   "/admin",
   passport.authenticate("jwt", { session: false }),
