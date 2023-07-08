@@ -46,7 +46,7 @@ That's it! You have successfully completed the installation of BLUE-Pet.
 services:
     node:
         env_file:
-            - blue.env
+            - .env
         image: bluehv/blue-pet
         command: sh -c "yarn start"
         ports:
@@ -55,7 +55,7 @@ services:
             - blue
     mongo:
         env_file:
-            - blue.env
+            - .env
         image: mongo:focal
         restart: always
         ports:
@@ -78,6 +78,9 @@ PORT=
 CLIENT_ID=
 CLIENT_SECRET=
 CALLBACK_URL=http://localhost:3000/auth/redirect
+MONGO_INITDB_ROOT_USERNAME=admin
+MONGO_INITDB_ROOT_PASSWORD=example
+MONGO_INITDB_DATABASE=test
 SECRET=
 REFRESH_SECRET=
 ADMIN_EMAIL=
