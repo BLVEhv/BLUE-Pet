@@ -1,7 +1,7 @@
 services:
   mongo:
     env_file:
-      - test.env
+      - blue.env
     image: mongo:focal
     restart: always
     ports:

@@ -30,6 +30,10 @@ app.get("/search-product/:keySearch", ProductController.searchProductByName);
 
 app.use("/auth", authRouter);
 
+app.get("", (req, res) => {
+  res.json({ msg: "Hello world with BLUE Pet" });
+});
+
 app.use(
   "/admin",
   passport.authenticate("jwt", { session: false }),
