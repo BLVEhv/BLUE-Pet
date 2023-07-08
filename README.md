@@ -32,7 +32,7 @@ That's it! You have successfully completed the installation of BLUE-Pet.
 
 ## Documentation
 
-- API: [v1](https://documenter.getpostman.com/view/20764163/2s93RWMq5a)
+- API: [v1](https://documenter.getpostman.com/view/24720609/2s93zH1dqg)
 
 ## Docker image
 
@@ -55,7 +55,7 @@ services:
             - blue
     mongo:
         env_file:
-            - .env
+            - mongo.env
         image: mongo:focal
         restart: always
         ports:
@@ -66,27 +66,4 @@ services:
             - blue
 networks:
     blue:
-```
-
-## blue.env
-
-- Example:
-
-```
-MONGO_URI=mongodb://admin:example@localhost:27017/?retryWrites=true&w=majority
-PORT=
-CLIENT_ID=
-CLIENT_SECRET=
-CALLBACK_URL=http://localhost:3000/auth/redirect
-MONGO_INITDB_ROOT_USERNAME=admin
-MONGO_INITDB_ROOT_PASSWORD=example
-MONGO_INITDB_DATABASE=test
-SECRET=
-REFRESH_SECRET=
-ADMIN_EMAIL=
-HOST=
-SERVICE=
-USER=
-PASS=
-BASE_URL = "http://localhost:3000/"
 ```

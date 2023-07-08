@@ -75,9 +75,9 @@ class CartController {
         return res.send("Add success");
       }
       const productId = req.body.product.productId;
-      const existProduct = userCart.cart_products.find(
-        (item) => item.productId === productId
-      );
+      const existProduct = userCart.cart_products.find((item) => {
+        item.productId === productId;
+      });
       if (existProduct) {
         const updateCart = await updateCartQuantity({
           userId: user._id,
@@ -101,9 +101,8 @@ class CartController {
     try {
       const user = await User.findOne({ email: req.user.email });
       const userCart = await cart.findOne({ _id: user._id });
-      const { productId, quantity } = req.body;
+      const { productId, quantity } = req.body.product;
       const foundProduct = await product.findOne({ _id: productId });
-
       if (!foundProduct) {
         throw new Error("Product not found!");
       }
@@ -122,15 +121,20 @@ class CartController {
         updatedQuantity = 0;
       }
 
-      const updateSet = {
-        $set: {
-          [`cart_products.${cartProductIndex}.quantity`]: updatedQuantity,
-        },
-      };
+      const updateSet = {};
 
       // Nếu updatedQuantity = 0, xoá product khỏi cart
       if (updatedQuantity === 0) {
-        updateSet.$pull = { cart_products: { productId: productId } };
+        updateSet.$pull = {
+          cart_products: {
+            productId: productId,
+          },
+        };
+        userCart.cart_products.splice(cartProductIndex, 1);
+      } else {
+        updateSet.$set = {
+          [`cart_products.${cartProductIndex}.quantity`]: updatedQuantity,
+        };
       }
 
       const options = { upsert: true, new: true };
@@ -153,7 +157,7 @@ class CartController {
       updateSet = {
         $pull: {
           cart_products: {
-            productId: req.body.productId,
+            productId: req.body.product.productId,
           },
         },
       };
