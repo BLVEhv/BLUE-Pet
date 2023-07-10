@@ -10,6 +10,35 @@ import {
   getDetailPet,
   updatePetById,
 } from "../utils/queryPet.util.js";
+import multer from "multer";
+import path from "path";
+import appRootPath from "app-root-path";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, appRootPath + "/src/public/image/");
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+
+const imageFilter = function (req, file, cb) {
+  // Accept images only
+  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+    req.fileValidationError = "Only image files are allowed!";
+    return cb(new Error("Only image files are allowed!"), false);
+  }
+  cb(null, true);
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: imageFilter,
+});
 
 class PetFactory {
   static async createPet(type, payload) {
@@ -56,7 +85,7 @@ class PetFactory {
       _id: id,
     });
     if (!draftFound) {
-      throw new Error("Draft is not exist");
+      throw new Error("Draft does not exist");
     }
 
     draftFound.isDraft = false;
@@ -71,7 +100,7 @@ class PetFactory {
       _id: id,
     });
     if (!publishFound) {
-      throw new Error("Publish is not exist");
+      throw new Error("Publish does not exist");
     }
 
     publishFound.isDraft = true;
@@ -142,13 +171,14 @@ class Cat extends PetGeneral {
     const newCat = await cat.create({
       ...this.pet_attributes,
       pet_admin: this.pet_admin,
+      pet_thumb: this.pet_thumb,
     });
     if (!newCat) {
-      throw new Error("Create new cat error");
+      throw new Error("Error creating a new cat");
     }
     const newPet = await super.createPet(newCat._id);
     if (!newPet) {
-      throw new Error("Create new pet error");
+      throw new Error("Error creating a new pet");
     }
     return newPet;
   }
@@ -178,13 +208,14 @@ class Dog extends PetGeneral {
     const newDog = await dog.create({
       ...this.pet_attributes,
       pet_admin: this.pet_admin,
+      pet_thumb: this.pet_thumb,
     });
     if (!newDog) {
-      throw new Error("Create new dog error");
+      throw new Error("Error creating a new dog");
     }
     const newPet = await super.createPet(newDog._id);
     if (!newPet) {
-      throw new Error("Create new pet error");
+      throw new Error("Error creating a new pet");
     }
     return newPet;
   }
@@ -210,13 +241,30 @@ class Dog extends PetGeneral {
 }
 
 class PetController {
+  constructor() {
+    this.uploadMiddleware = upload.single("pet_thumb");
+  }
   createPet = async (req, res, next) => {
-    const user = await User.findOne({ email: req.user.email });
-    await PetFactory.createPet(req.body.pet_type, {
-      ...req.body,
-      pet_admin: user._id,
-    });
-    res.send("Create pet success");
+    try {
+      const user = await User.findOne({ email: req.user.email });
+
+      this.uploadMiddleware(req, res, async (err) => {
+        if (err) {
+          // Xử lý lỗi tải lên tệp tin
+          return next(err);
+        }
+
+        await PetFactory.createPet(req.body.pet_type, {
+          ...req.body,
+          pet_admin: user._id,
+          pet_thumb: req.file.filename,
+        });
+
+        res.send("Create pet success");
+      });
+    } catch (error) {
+      next(error);
+    }
   };
 
   findAllDraft = async (req, res, next) => {
@@ -265,11 +313,27 @@ class PetController {
 
   updatePet = async (req, res, next) => {
     const user = await User.findOne({ email: req.user.email });
-    await PetFactory.updatePet(req.body.pet_type, req.params.id, {
-      ...req.body,
-      pet_admin: user._id,
+    this.uploadMiddleware(req, res, async (err) => {
+      if (err) {
+        // Xử lý lỗi tải lên tệp tin
+        return next(err);
+      }
+
+      const petType = req.body.pet_type;
+      const petId = req.params.id;
+      const updatedFields = {
+        ...req.body,
+        pet_admin: user._id,
+      };
+
+      // Kiểm tra nếu có tệp tin được tải lên
+      if (req.file) {
+        updatedFields.pet_thumb = req.file.filename;
+      }
+
+      await PetFactory.updatePet(petType, petId, updatedFields);
+      res.send("Update pet success");
     });
-    res.send("Update pet success");
   };
 }
 export default new PetController();

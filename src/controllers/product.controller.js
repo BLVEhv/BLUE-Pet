@@ -11,6 +11,35 @@ import {
   getDetailProduct,
   updateProductById,
 } from "../utils/queryProduct.js";
+import multer from "multer";
+import path from "path";
+import appRootPath from "app-root-path";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, appRootPath + "/src/public/image/");
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+
+const imageFilter = function (req, file, cb) {
+  // Accept images only
+  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+    req.fileValidationError = "Only image files are allowed!";
+    return cb(new Error("Only image files are allowed!"), false);
+  }
+  cb(null, true);
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: imageFilter,
+});
 
 class ProductFactory {
   static async createProduct(type, payload) {
@@ -154,6 +183,7 @@ class Food extends ProductGeneral {
     const newFood = await food.create({
       ...this.product_attributes,
       product_admin: this.product_admin,
+      product_thumb: this.product_thumb,
     });
     if (!newFood) {
       throw new Error("Create new food error");
@@ -190,6 +220,7 @@ class Sand extends ProductGeneral {
     const newSand = await dog.create({
       ...this.product_attributes,
       product_admin: this.product_admin,
+      product_thumb: this.product_thumb,
     });
     if (!newSand) {
       throw new Error("Create new sand error");
@@ -226,6 +257,7 @@ class Accessory extends ProductGeneral {
     const newAccessory = await dog.create({
       ...this.product_attributes,
       product_admin: this.product_admin,
+      product_thumb: this.product_thumb,
     });
     if (!newAccessory) {
       throw new Error("Create new accessory error");
@@ -258,13 +290,29 @@ class Accessory extends ProductGeneral {
 }
 
 class ProductController {
+  constructor() {
+    this.uploadMiddleware = upload.single("product_thumb");
+  }
   createProduct = async (req, res, next) => {
-    const user = await User.findOne({ email: req.user.email });
-    await ProductFactory.createProduct(req.body.product_type, {
-      ...req.body,
-      product_admin: user._id,
-    });
-    res.send("Create product success");
+    try {
+      const user = await User.findOne({ email: req.user.email });
+      this.uploadMiddleware(req, res, async (err) => {
+        if (err) {
+          // Xử lý lỗi tải lên tệp tin
+          return next(err);
+        }
+
+        await ProductFactory.createProduct(req.body.product_type, {
+          ...req.body,
+          product_admin: user._id,
+          product_thumb: req.file.filename,
+        });
+
+        res.send("Create product success");
+      });
+    } catch (err) {
+      next(err);
+    }
   };
 
   findAllDraft = async (req, res, next) => {
@@ -314,12 +362,36 @@ class ProductController {
   };
 
   updateProduct = async (req, res, next) => {
-    const user = await User.findOne({ email: req.user.email });
-    await ProductFactory.updateProduct(req.body.product_type, req.params.id, {
-      ...req.body,
-      product_admin: user._id,
-    });
-    res.send("Update product success");
+    try {
+      const user = await User.findOne({ email: req.user.email });
+      this.uploadMiddleware(req, res, async (err) => {
+        if (err) {
+          // Xử lý lỗi tải lên tệp tin
+          return next(err);
+        }
+
+        const productType = req.body.product_type;
+        const productId = req.params.id;
+        const updatedFields = {
+          ...req.body,
+          product_admin: user._id,
+        };
+
+        // Kiểm tra nếu có tệp tin được tải lên
+        if (req.file) {
+          updatedFields.product_thumb = req.file.filename;
+        }
+
+        await ProductFactory.updateProduct(
+          productType,
+          productId,
+          updatedFields
+        );
+        res.send("Update product success");
+      });
+    } catch (err) {
+      next(err);
+    }
   };
 }
 export default new ProductController();
