@@ -8,7 +8,7 @@ import UserController from "../controllers/user.controller.js";
 const authRouter = Router();
 
 const generateAccessToken = (user) =>
-  jwt.sign({ user }, process.env.SECRET, { expiresIn: "30s" });
+  jwt.sign({ user }, process.env.SECRET);
 const generateRefreshToken = (user) =>
   jwt.sign({ user }, process.env.REFRESH_SECRET, { expiresIn: "7d" });
 
