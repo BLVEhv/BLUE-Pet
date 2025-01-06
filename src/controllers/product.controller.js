@@ -68,13 +68,13 @@ class ProductController {
 				product.product_name = product_name;
 			}
 			if (product_price) {
-				product.product_name = product_price;
+				product.product_price = product_price;
 			}
 			if (product_quantity) {
-				product.product_name = product_quantity;
+				product.product_quantity = product_quantity;
 			}
 			if (product_descripton) {
-				product.product_name = product_descripton;
+				product.product_descripton = product_descripton;
 			}
 			if (req.file) {
 				product.product_thumb = req.file.filename;
@@ -89,6 +89,54 @@ class ProductController {
 				.json({ status: e.status, message: e.message });
 		}
 	};
+	findAllDraft = async (req, res, next) => {
+		try {
+			const products = await Product.find({ isDraft: true });
+			return res.send(products);
+		} catch (e) {
+			console.log(e);
+			return res
+				.status(e.status || 500)
+				.json({ status: e.status, message: e.message });
+		}
+	};
+	publishDraftById = async (req, res, next) => {
+		try {
+			const id = req.params.id;
+			const product = await Product.findById({ _id: id });
+			if (!product) {
+				throw new Error('Product is not exist!');
+			}
+			product.isDraft = false;
+			product.isPublish = true;
+			await product.save();
+			return res.send({ message: 'success', result: product });
+		} catch (e) {
+			console.log(e);
+			return res
+				.status(e.status || 500)
+				.json({ status: e.status, message: e.message });
+		}
+	};
+	unPublishDraftById = async (req, res, next) => {
+		try {
+			const id = req.params.id;
+			const product = await Product.findById({ _id: id });
+			if (!product) {
+				throw new Error('Product is not exist!');
+			}
+			product.isDraft = true;
+			product.isPublish = false;
+			await product.save();
+			return res.send({ message: 'success', result: product });
+		} catch (e) {
+			console.log(e);
+			return res
+				.status(e.status || 500)
+				.json({ status: e.status, message: e.message });
+		}
+	};
+		
 }
 
 export default new ProductController();

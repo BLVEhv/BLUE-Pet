@@ -26,16 +26,16 @@ adminRouter.post(
 );
 
 //get all draft product
-// adminRouter.get('/draft-product', ProductController.findAllDraft);
+adminRouter.get('/draft-product', ProductController.findAllDraft);
 
 // //publish draft product
-// adminRouter.put('/draft-product/:id', ProductController.publishDraftById);
+adminRouter.put('/draft-product/:id', ProductController.publishDraftById);
 
 //unpublish product
-// adminRouter.put(
-// 	'/un-publish-product/:id',
-// 	ProductController.unPublishDraftById,
-// );
+adminRouter.put(
+	'/un-publish-product/:id',
+	ProductController.unPublishDraftById,
+);
 
 //update product
 adminRouter.patch(
